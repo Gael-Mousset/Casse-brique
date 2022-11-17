@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: main.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: main.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>let canvas;
+let context;
+let started = false;
+let save = 0;
+let resultGame;
+let scorePlayer = 0;
+
+let paddle;
+let player;
+let ball;
+let interval;
+
+let urlGET = "http://localhost:3000/bestPlayers/";
+let nb = 5;
+let urlPOST = "http://localhost:3000/"
+let newScore;
+
+let canvasHeight;
+let canvasWidth;
+/**
+ * @file main.js et le ficher à la rocine du projet
+ * @author Grelet Hacala Magran Mayonobe Mousset
+ * @see &lt;a href = "https://gitlab.univ-lr.fr/hmayonob/grelet_hacala_magnan_mayonobe_mousset_progweb_cb" target="_blank"> Repo Git &lt;/a>
+ */
+
+
+/**
+ * Fonction qui charge les image representent les vie du joueur
+ */
+function loadLife()
+{
+    $('#life1').attr('src', './img/life.png');
+    $('#life2').attr('src', './img/life.png');
+    $('#life3').attr('src', './img/life.png');
+}
+
+/**
+ * Fonction qui gère les deplacement de la raqutte
+ */
+function managePaddle() {
+    $(document).keydown(function (event) {
+        if (event.which === 39) {
+            paddle.setVitesse(4)
+        }
+        else if (event.which === 37) {
+            paddle.setVitesse(-4)
+        }
+    });
+    $(document).keyup(function (event) {
+        if (event.which === 39) {
+            paddle.setVitesse(0)
+        }
+        else if (event.which === 37) {
+            paddle.setVitesse(0)
+        }
+    });
+}
+
+/**
+ * Fonction que constrit l'espace de jeux
+ */
+function buildGame() {
+    save = 0;
+    started = true;
+    numberExplosionBrick = 3;
+    clearInterval(interval);
+    loadLife();
+    buildBricks();
+    buildPaddle();
+    buildBall();
+    player.setLife(3);
+}
+
+/**
+ * Fonction qui donne les score enregistrer dans le server de score
+ * @param {int} nb Numéro de la potition du joueur
+ */
+function getRankingScore(nb)
+{ 
+    fetch(urlGET+nb).then((res)=>{
+        if(res.ok){
+            return res.json();
+        }
+    }).then((value) => {
+        // vider les listes
+        $('.rankingScores').html('');
+        $('.rankingPlayers').html('');
+
+        // ajouter les 5 premiers scores
+        $('.rankingScores').append('&lt;li id="s1">' + value[0].score + '&lt;/li>');
+        $('.rankingScores').append('&lt;li id="s2">' + value[1].score + '&lt;/li>');
+        $('.rankingScores').append('&lt;li id="s3">' + value[2].score + '&lt;/li>');
+        $('.rankingScores').append('&lt;li id="s4">' + value[3].score + '&lt;/li>');
+        $('.rankingScores').append('&lt;li id="s5">' + value[4].score + '&lt;/li>');
+
+        // ajouter les 5 premiers joueurs
+        $('.rankingPlayers').append('&lt;li id="p1">' + value[0].nom + '&lt;/li>');
+        $('.rankingPlayers').append('&lt;li id="p2">' + value[1].nom + '&lt;/li>');
+        $('.rankingPlayers').append('&lt;li id="p3">' + value[2].nom + '&lt;/li>');
+        $('.rankingPlayers').append('&lt;li id="p4">' + value[3].nom + '&lt;/li>');
+        $('.rankingPlayers').append('&lt;li id="p5">' + value[4].nom + '&lt;/li>');
+    }).catch((err) => {
+        console.error(err);
+    })
+}
+
+/**
+ * Fonction qui sauvegarde le score du joueur à la fin de la partie
+ * @param {string} name Le nom du joueur
+ * @param {int} score Le score du joueur
+ */
+function saveScores(name, score) {
+    $.post('http://localhost:3000/newScore',
+        { "nom": name, "score": score },
+        function () {
+            clearInterval(interval);
+            $('.displayGame').hide();
+            $('.gameOver').show();
+            $('.menuElement').hide();
+            scorePlayer = 0;
+        }
+    ).done(console.log('Request done!')).fail(console.log('failed, ' + ex));
+}
+
+$(document).ready(function () {
+    canvas = document.getElementById('drawArea');
+    context = canvas.getContext('2d');
+    context.lineWidth = 1;
+    context.strokeStyle = "#871de0";
+    canvasHeight = canvas.height;
+    canvasWidth = canvas.width;
+
+    // Démarrer une partie, click sur le bouton "Jouer"
+    $('#playButton').on("click", function play() {
+        $('.menuElement').hide();
+        $('.input_name_player').css("display", "flex");
+
+        // Lancer la partie, click sur le bouton "Lancer la partie"
+        $('#startButton').on("click", function () {
+            if ($('#name_text').val() != "") {
+                $('.input_name_player').hide();
+                $('.displayGame').css("display", "flex");
+                canvas.removeAttribute("hidden");
+
+                createPlayer($('#name_text').val(), scorePlayer);
+                getRankingScore(nb);
+                buildGame();
+                interval = setInterval(draw, 10);
+                //managePaddle();
+
+                $(document).on("keydown", function (event) {
+                    if (event.which === 32) {
+                        ball.setVitesseX(1.5);
+                        ball.setVitesseY(-1.5);
+                        $(document).off("keydown");
+                    }
+                    managePaddle();
+                });
+            }
+            else {
+                console.log("Aucun nom saisi !!");
+            }
+        })
+    })
+
+    // Rejouer depuis un GameOver
+    $('#replayButton').on("click", function () {
+        resetBall();
+        clearInterval(interval);
+        $('#startButton').click();
+        $('.gameOver').hide();
+    })
+
+    // Rejouer depuis une Victoire
+    $('#replayButtonWin').on("click", function () {
+        resetBall();
+        clearInterval(interval);
+        $('#startButton').click();
+        $('.win').hide();
+    })
+
+    // Consulter le classement
+    $('#rankButton').on("click", function () {
+        getRankingScore(nb);
+        $('.menuElement').hide();
+        $('.ranking').show();
+    })
+
+    // Retourner au menu depuis le classement
+    $('#returnButton').on("click", function () {
+        $('.menuElement').show();
+        $('.ranking').hide();
+    })
+
+    // Retourner au menu depuis l'ecran de gameOver
+    $('#menuButton').on("click", function () {
+        $('#name_text').val('');
+        clearInterval(interval);
+        $('.menuElement').show();
+        $('.gameOver').css("display", "none");
+    })
+});</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Ball.html">Ball</a></li><li><a href="Brick.html">Brick</a></li><li><a href="Paddle.html">Paddle</a></li><li><a href="Player.html">Player</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addSpeedToBall">addSpeedToBall</a></li><li><a href="global.html#buildBall">buildBall</a></li><li><a href="global.html#buildBricks">buildBricks</a></li><li><a href="global.html#buildGame">buildGame</a></li><li><a href="global.html#buildPaddle">buildPaddle</a></li><li><a href="global.html#colisionPaddle">colisionPaddle</a></li><li><a href="global.html#createPlayer">createPlayer</a></li><li><a href="global.html#detectionColisions">detectionColisions</a></li><li><a href="global.html#draw">draw</a></li><li><a href="global.html#drawBall">drawBall</a></li><li><a href="global.html#drawBricks">drawBricks</a></li><li><a href="global.html#drawPaddle">drawPaddle</a></li><li><a href="global.html#drawScore">drawScore</a></li><li><a href="global.html#explosion">explosion</a></li><li><a href="global.html#getRankingScore">getRankingScore</a></li><li><a href="global.html#loadLife">loadLife</a></li><li><a href="global.html#managePaddle">managePaddle</a></li><li><a href="global.html#moveBall">moveBall</a></li><li><a href="global.html#movePaddle">movePaddle</a></li><li><a href="global.html#removeBrick">removeBrick</a></li><li><a href="global.html#resetBall">resetBall</a></li><li><a href="global.html#resetPaddle">resetPaddle</a></li><li><a href="global.html#saveScores">saveScores</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Mar 31 2022 19:55:44 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+    <script type="text/javascript" src="canvas.js"></script>
+    <script type="text/javascript" src="brick.js"></script>
+    <script type="text/javascript" src="player.js"></script>
+    <script type="text/javascript" src="paddle.js"></script>
+    <script type="text/javascript" src="ball.js"></script>
+    <title>Casse-Brique</title>
+</head>
+
+<body>
+    <h1 class="title menuElement">CASSE-BRIQUE</h1>
+    <button type="button" class="button menuElement" id="playButton">Jouer</button>
+    <button type="button" class="button menuElement" id="rankButton">Classement</button>
+    <div style="display: none;" class="input_name_player">
+        <input id="name_text" required="required" type="text" placeholder="Entrez votre nom..." />
+        <button type="button" class="button" id="startButton">Lancer la partie</button>
+    </div>
+
+    <!--Affiche la page de jeu au complet-->
+    <div style="display: none;" class="displayGame">
+        <!--Affiche le classement à côté du jeu-->
+        <div class="gameRanking">
+            <h1 class="rankingTitle">CLASSEMENT</h1>
+            <div class="rankingList">
+                <ol class="rankingPlayers">
+                    <li id="p1">player1</li>
+                    <li id="p2">player2</li>
+                    <li id="p3">player3</li>
+                    <li id="p4">player4</li>
+                    <li id="p5">player5</li>
+                </ol>
+                <ul class="rankingScores">
+                    <li id="s1">score1</li>
+                    <li id="s2">score2</li>
+                    <li id="s3">score3</li>
+                    <li id="s4">score4</li>
+                    <li id="s5">score5</li>
+                </ul>
+            </div>
+        </div>
+        <!--Affiche le jeu-->
+        <div class="game">
+            <canvas id="drawArea" width="700" height="500">Your browser doesn't support canvas</canvas>
+            <div class="bottom">
+                <h2 class="scoreGame">Score : </h2>
+                <div class="lifes">
+                    <img id="life1" src="./img/life.png">
+                    <img id="life2" src="./img/life.png">
+                    <img id="life3" src="./img/life.png">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: none;" class="ranking">
+        <h1 class="rankingTitle">CLASSEMENT</h1>
+        <div class="score">
+            <ol class="rankingPlayers">
+                <li id="p1">player1</li>
+                <li id="p2">player2</li>
+                <li id="p3">player3</li>
+                <li id="p4">player4</li>
+                <li id="p5">player5</li>
+            </ol>
+            <ul class="rankingScores">
+                <li id="s1">score1</li>
+                <li id="s2">score2</li>
+                <li id="s3">score3</li>
+                <li id="s4">score4</li>
+                <li id="s5">score5</li>
+            </ul>
+        </div>
+        <button type="button" class="button" id="returnButton">Menu</button>
+    </div>
+
+    <div style="display: none;" class="gameOver">
+        <h1>GameOver</h1>
+        <h2>Vous avez perdu !</h2>
+        <div class="gameOverButton">
+            <button type="button" class="button" id="menuButton">Menu</button>
+            <button type="button" class="button" id="replayButton">Rejouer</button>
+        </div>
+    </div>
+
+    <div style="display: none;" class="win">
+        <h1>Victoire</h1>
+        <h2>Vous avez gagné !</h2>
+        <div class="winButton">
+            <button type="button" class="button" id="replayButtonWin">Continuer</button>
+        </div>
+    </div>
+
+</body>
+
+</html>
